@@ -11,7 +11,8 @@
             background-color: #f0f4f8;
             color: #333;
             display: flex;
-            justify-content: center;
+            flex-direction: column;
+            justify-content: flex-start;
             align-items: center;
             min-height: 100vh;
             margin: 0;
@@ -220,35 +221,44 @@
             display: none;
         }
 
-        /* --- Google Search Bar --- */
+        /* --- DuckDuckGo Search Section --- */
         .search-container {
+            width: 100%;
+            max-width: 700px;
             margin-top: 30px;
+            padding: 20px;
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
             text-align: center;
-            border-top: 1px solid #e0e0e0;
-            padding-top: 20px;
         }
-        .search-container form {
+        .search-container h3 {
+            margin-top: 0;
+            color: #444;
+        }
+        .search-form-ddg {
             display: flex;
             justify-content: center;
             align-items: center;
             gap: 10px;
+            margin-bottom: 20px;
         }
-        .search-container input[type="text"] {
+        .search-form-ddg input[type="text"] {
             padding: 12px 15px;
             font-size: 1.1em;
             border: 2px solid #ccc;
             border-radius: 25px;
-            width: 70%;
+            flex-grow: 1;
             max-width: 400px;
             transition: border-color 0.3s;
         }
-        .search-container input[type="text"]:focus {
+        .search-form-ddg input[type="text"]:focus {
             outline: none;
             border-color: #007bff;
             box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
         }
-        .search-container button {
-            background-color: #4285f4;
+        .search-form-ddg button {
+            background-color: #E27924; /* DuckDuckGo's color */
             color: white;
             border: none;
             border-radius: 25px;
@@ -258,8 +268,15 @@
             cursor: pointer;
             transition: background-color 0.3s;
         }
-        .search-container button:hover {
-            background-color: #357ae8;
+        .search-form-ddg button:hover {
+            background-color: #CC6F21;
+        }
+        .search-results-ddg {
+            width: 100%;
+            height: 500px; /* iframeの高さは必要に応じて調整してください */
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            display: none; /* 最初は非表示 */
         }
     </style>
 </head>
@@ -292,13 +309,15 @@
                 <button id="next-set-btn" style="display: none;">次の10単語へ</button>
             </div>
         </div>
-        
-        <div class="search-container">
-            <form action="https://www.google.com/search" method="get" target="_blank">
-                <input type="text" name="q" placeholder="分からない単語を調べる">
-                <button type="submit">検索</button>
-            </form>
-        </div>
+    </div>
+    
+    <div class="search-container">
+        <h3>DuckDuckGoで単語を調べる (プライバシー重視)</h3>
+        <form class="search-form-ddg" action="https://duckduckgo.com/" method="get" onsubmit="return false;">
+            <input type="text" id="duckduckgo-search-input" name="q" placeholder="調べたい単語を入力">
+            <button type="submit" id="duckduckgo-search-button">検索</button>
+        </form>
+        <iframe id="duckduckgo-search-iframe" class="search-results-ddg" src="about:blank" title="DuckDuckGo Search Results"></iframe>
     </div>
 
     <script>
@@ -428,6 +447,11 @@
         const setResultContainer = document.getElementById('set-result-container');
         const backToSectionsBtn = document.getElementById('back-to-sections-btn');
         const nextSetBtn = document.getElementById('next-set-btn');
+        
+        // --- DuckDuckGo Search Elements ---
+        const duckduckgoSearchInput = document.getElementById('duckduckgo-search-input');
+        const duckduckgoSearchButton = document.getElementById('duckduckgo-search-button');
+        const duckduckgoSearchIframe = document.getElementById('duckduckgo-search-iframe');
 
         function shuffleArray(array) {
             for (let i = array.length - 1; i > 0; i--) {
@@ -436,17 +460,13 @@
             }
         }
 
-        // --- 修正箇所: initializeQuiz関数 ---
-        // ページ読み込み時にセクションボタンを作成し、選択画面を表示します
         function initializeQuiz() {
             createSectionButtons();
             showScreen('section-select');
         }
 
-        // --- 修正箇所: createSectionButtons関数 ---
-        // セクションボタンを動的に生成し、クリックイベントを設定します
         function createSectionButtons() {
-            sectionButtonsContainer.innerHTML = ''; // コンテナをクリア
+            sectionButtonsContainer.innerHTML = '';
             const totalSets = Math.ceil(allWords.length / SET_SIZE);
             for (let i = 0; i < totalSets; i++) {
                 const startNum = START_NUMBER + (i * SET_SIZE);
@@ -454,14 +474,11 @@
                 const button = document.createElement('button');
                 button.textContent = `No. ${startNum} - ${endNum}`;
                 button.classList.add('section-btn');
-                // クリックイベントを設定
                 button.addEventListener('click', () => startQuizForSection(i));
                 sectionButtonsContainer.appendChild(button);
             }
         }
 
-        // --- 修正箇所: startQuizForSection関数 ---
-        // 選択されたセクションに基づいてクイズを開始します
         function startQuizForSection(sectionIndex) {
             const startIndex = sectionIndex * SET_SIZE;
             const endIndex = startIndex + SET_SIZE;
@@ -471,9 +488,7 @@
             currentWordIndexInSet = 0;
             scoreInSet = 0;
             
-            // クイズ画面に切り替える
             showScreen('quiz');
-            // 最初の問題を表示
             displayQuestion();
         }
 
@@ -517,23 +532,4 @@
             answered = true;
 
             const buttons = document.querySelectorAll('.option-btn');
-            buttons.forEach(btn => btn.disabled = true);
-
-            if (selectedMeaning === correctMeaning) {
-                resultDisplay.textContent = '正解！素晴らしい！';
-                resultDisplay.style.color = '#28a745';
-                selectedButton.classList.add('correct');
-                scoreInSet++;
-            } else {
-                resultDisplay.textContent = `不正解... 正解は「${correctMeaning}」です。`;
-                resultDisplay.style.color = '#dc3545';
-                selectedButton.classList.add('incorrect');
-                buttons.forEach(btn => {
-                    if (btn.textContent === correctMeaning) {
-                        btn.classList.add('correct');
-                    }
-                });
-            }
-
-            nextBtn.style.display = 'block';
-            totalQuestionsDisplay.te
+            buttons.forEach(btn => btn.disabled = t
