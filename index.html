@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Target 1900 - Section 4 Quiz</title>
     <style>
+        /* General Body and Layout */
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: #f0f4f8;
@@ -21,41 +22,60 @@
             border-radius: 12px;
             box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
             width: 100%;
-            max-width: 600px;
+            max-width: 700px; /* Increased max-width for wider buttons */
             padding: 40px;
             box-sizing: border-box;
             text-align: center;
+            position: relative;
         }
-        h1 {
-            color: #1a202c;
-            font-size: 2.5em;
-            margin-bottom: 10px;
-            font-weight: 700;
-            letter-spacing: -0.5px;
-        }
-        p {
-            color: #666;
-            font-size: 1.1em;
+
+        /* Header / Title */
+        .header-container {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: calc(100% - 80px); /* Adjust width */
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             margin-bottom: 30px;
-            line-height: 1.6;
         }
+        .header-container h1 {
+            font-size: 1.5em; /* Smaller font size */
+            color: #1a202c;
+            margin: 0;
+            font-weight: 600;
+        }
+        #score-display {
+            background-color: #2c3e50;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 1.1em;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Main Quiz Elements */
         #word-display {
             background-color: #e3f2fd;
             color: #1565c0;
-            font-size: 3em;
+            font-size: 3.5em; /* Slightly larger font */
             font-weight: bold;
-            padding: 30px 20px;
+            padding: 40px 20px;
             border-radius: 8px;
+            margin-top: 50px; /* Move down to avoid header */
             margin-bottom: 30px;
-            min-height: 80px;
+            min-height: 100px;
             display: flex;
             align-items: center;
             justify-content: center;
             border: 2px solid #90caf9;
         }
         #options-container {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
+            display: flex; /* Use flexbox for horizontal layout */
+            flex-direction: column; /* Stack buttons vertically */
             gap: 15px;
             margin-bottom: 30px;
         }
@@ -70,13 +90,15 @@
             color: #444;
             font-weight: 600;
             text-align: left;
+            width: 100%; /* Make button width full */
+            white-space: normal; /* Allow text to wrap if needed */
         }
         .option-btn:hover {
             background-color: #e9ecef;
             border-color: #b0c4de;
         }
         .option-btn:active {
-            transform: scale(0.98);
+            transform: scale(0.99);
         }
         .option-btn.correct {
             background-color: #d4edda;
@@ -121,34 +143,65 @@
         #next-btn:active {
             transform: scale(0.99);
         }
-        #score-display {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            background-color: #2c3e50;
-            color: white;
-            padding: 10px 20px;
-            border-radius: 20px;
-            font-weight: bold;
+        
+        /* Quiz End & Set Clear UI */
+        #set-result-container {
+            margin-top: 20px;
+            padding: 20px;
+            background-color: #e9f5ff;
+            border: 2px solid #b3e5fc;
+            border-radius: 10px;
+            display: none; /* Hidden by default */
+        }
+        #set-result-container h2 {
+            margin-top: 0;
+            color: #0288d1;
+            font-size: 2em;
+        }
+        #set-result-container p {
             font-size: 1.2em;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            color: #01579b;
+        }
+        #next-set-btn {
+            background-color: #4caf50;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 15px 30px;
+            font-size: 1.2em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            width: 100%;
+            margin-top: 20px;
+        }
+        #next-set-btn:hover {
+            background-color: #388e3c;
         }
     </style>
 </head>
 <body>
     <div class="quiz-container">
-        <h1>Target 1900 - セクション4</h1>
+        <div class="header-container">
+            <h1>Target 1900 - セクション4</h1>
+            <div id="score-display">スコア: <span id="score">0</span> / <span id="total-questions">0</span></div>
+        </div>
         <p>単語の意味を選んでみよう！</p>
         <div id="word-display">単語</div>
         <div id="options-container"></div>
         <div id="result"></div>
         <button id="next-btn" style="display: none;">次の問題へ</button>
+        
+        <div id="set-result-container">
+            <h2 id="set-result-title"></h2>
+            <p id="set-result-text"></p>
+            <button id="next-set-btn" style="display: none;">次の10単語へ</button>
+        </div>
     </div>
-    <div id="score-display">スコア: <span id="score">0</span> / <span id="total">0</span></div>
 
     <script>
-        // ユーザーが提供した正確な単語リスト
-        const words = [
+        // ユーザーが提供した単語リスト（301-400）
+        const allWords = [
             { en: "predict", jp: "を予言［予測］する" },
             { en: "examine", jp: "を調べる；を診察する；を尋問する" },
             { en: "trust", jp: "を信頼する；を（信頼して）託す" },
@@ -251,18 +304,25 @@
             { en: "nevertheless", jp: "それにもかかわらず（≒ nonetheless ⇒ 1000）" }
         ];
 
-        let currentWordIndex = 0;
-        let score = 0;
-        let totalQuestions = 0;
+        let currentSetIndex = 0; // Tracks the current set of 10 words
+        let currentWordIndexInSet = 0; // Tracks the current word within the set
+        let currentSetWords = [];
+        let scoreInSet = 0;
+        let totalScore = 0;
         let answered = false;
+
+        const SET_SIZE = 10;
 
         const wordDisplay = document.getElementById('word-display');
         const optionsContainer = document.getElementById('options-container');
         const resultDisplay = document.getElementById('result');
         const nextBtn = document.getElementById('next-btn');
         const scoreDisplay = document.getElementById('score');
-        const totalDisplay = document.getElementById('total');
+        const totalQuestionsDisplay = document.getElementById('total-questions');
+        const setResultContainer = document.getElementById('set-result-container');
+        const nextSetBtn = document.getElementById('next-set-btn');
 
+        // Function to shuffle an array
         function shuffleArray(array) {
             for (let i = array.length - 1; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1));
@@ -270,9 +330,39 @@
             }
         }
 
-        function displayQuestion() {
-            if (currentWordIndex >= words.length) {
+        // Initialize quiz by preparing the first set
+        function initializeQuiz() {
+            shuffleArray(allWords); // Shuffle the entire list once
+            currentSetIndex = 0;
+            totalScore = 0;
+            startNextSet();
+        }
+
+        // Starts a new set of 10 words
+        function startNextSet() {
+            const startIndex = currentSetIndex * SET_SIZE;
+            const endIndex = startIndex + SET_SIZE;
+            if (startIndex >= allWords.length) {
                 endQuiz();
+                return;
+            }
+
+            // Reset set variables
+            currentSetWords = allWords.slice(startIndex, endIndex);
+            currentWordIndexInSet = 0;
+            scoreInSet = 0;
+            
+            // Hide result container
+            setResultContainer.style.display = 'none';
+
+            // Start the first question of the new set
+            displayQuestion();
+        }
+
+        // Displays a single question
+        function displayQuestion() {
+            if (currentWordIndexInSet >= currentSetWords.length) {
+                endSet();
                 return;
             }
 
@@ -281,21 +371,25 @@
             nextBtn.style.display = 'none';
             optionsContainer.innerHTML = '';
 
-            const currentWord = words[currentWordIndex];
+            const currentWord = currentSetWords[currentWordIndexInSet];
             wordDisplay.textContent = currentWord.en;
 
-            // Generate options
+            // Update total questions count
+            totalQuestionsDisplay.textContent = totalScore + scoreInSet;
+
+            // Generate options (correct + 3 incorrect)
             const correctMeaning = currentWord.jp;
             let options = [correctMeaning];
 
-            // Get 3 random incorrect meanings
-            const incorrectOptions = words.filter(word => word.jp !== correctMeaning);
+            // Get 3 random incorrect meanings from the ENTIRE list (for better variety)
+            const incorrectOptions = allWords.filter(word => word.jp !== correctMeaning);
             shuffleArray(incorrectOptions);
             options = options.concat(incorrectOptions.slice(0, 3).map(word => word.jp));
 
-            // Shuffle options
+            // Shuffle options for display
             shuffleArray(options);
 
+            // Create buttons
             options.forEach(option => {
                 const button = document.createElement('button');
                 button.textContent = option;
@@ -303,14 +397,14 @@
                 button.addEventListener('click', () => checkAnswer(button, option, correctMeaning));
                 optionsContainer.appendChild(button);
             });
-            totalQuestions++;
-            totalDisplay.textContent = totalQuestions;
         }
 
+        // Checks if the selected answer is correct
         function checkAnswer(selectedButton, selectedMeaning, correctMeaning) {
             if (answered) return;
             answered = true;
 
+            // Disable all buttons to prevent re-clicking
             const buttons = document.querySelectorAll('.option-btn');
             buttons.forEach(btn => btn.disabled = true);
 
@@ -318,8 +412,7 @@
                 resultDisplay.textContent = '正解！素晴らしい！';
                 resultDisplay.style.color = '#28a745';
                 selectedButton.classList.add('correct');
-                score++;
-                scoreDisplay.textContent = score;
+                scoreInSet++;
             } else {
                 resultDisplay.textContent = `不正解... 正解は「${correctMeaning}」です。`;
                 resultDisplay.style.color = '#dc3545';
@@ -335,22 +428,50 @@
             nextBtn.style.display = 'block';
         }
 
+        // Move to the next question in the current set
         nextBtn.addEventListener('click', () => {
-            currentWordIndex++;
+            currentWordIndexInSet++;
+            scoreDisplay.textContent = totalScore + scoreInSet; // Update score immediately
             displayQuestion();
         });
 
-        function endQuiz() {
-            wordDisplay.textContent = 'クイズ終了！';
+        // Ends the current 10-word set
+        function endSet() {
+            totalScore += scoreInSet;
+            scoreDisplay.textContent = totalScore;
+            totalQuestionsDisplay.textContent = totalScore; // This should be total questions answered
+
+            wordDisplay.textContent = `10単語クリア！`;
             optionsContainer.innerHTML = '';
-            resultDisplay.textContent = `お疲れ様でした！スコアは ${score} / ${totalQuestions} でした。`;
-            resultDisplay.style.color = '#1a202c';
             nextBtn.style.display = 'none';
+            resultDisplay.textContent = '';
+            
+            setResultContainer.style.display = 'block';
+            document.getElementById('set-result-title').textContent = `今回のセットの結果: ${scoreInSet} / ${SET_SIZE} 問正解！`;
+            document.getElementById('set-result-text').textContent = '次の10単語に挑戦しますか？';
+            nextSetBtn.style.display = 'block';
+            
+            currentSetIndex++;
         }
 
-        // Initialize the quiz
-        shuffleArray(words);
-        displayQuestion();
+        // Moves to the next set
+        nextSetBtn.addEventListener('click', () => {
+            startNextSet();
+        });
+        
+        // Ends the entire quiz
+        function endQuiz() {
+            wordDisplay.textContent = '全問終了！';
+            optionsContainer.innerHTML = '';
+            nextBtn.style.display = 'none';
+            setResultContainer.style.display = 'block';
+            document.getElementById('set-result-title').textContent = `クイズ終了！`;
+            document.getElementById('set-result-text').textContent = `お疲れ様でした！最終スコアは ${totalScore} / ${allWords.length} です。`;
+            nextSetBtn.style.display = 'none';
+        }
+
+        // Start the quiz when the page loads
+        document.addEventListener('DOMContentLoaded', initializeQuiz);
     </script>
 </body>
 </html>
