@@ -16,36 +16,38 @@
             min-height: 100vh;
             margin: 0;
             padding: 20px;
+            box-sizing: border-box; /* Ensures padding doesn't cause overflow */
         }
         .quiz-container {
             background-color: #ffffff;
             border-radius: 12px;
             box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
             width: 100%;
-            max-width: 700px; /* Increased max-width for wider buttons */
+            max-width: 700px;
             padding: 40px;
             box-sizing: border-box;
             text-align: center;
-            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
         }
 
         /* Header / Title */
         .header-container {
-            position: absolute;
-            top: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: calc(100% - 80px); /* Adjust width */
+            width: 100%;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 30px;
+            margin-bottom: 20px;
+            text-align: left;
         }
         .header-container h1 {
-            font-size: 1.5em; /* Smaller font size */
+            font-size: 1.8em; /* Slightly larger for clarity */
             color: #1a202c;
             margin: 0;
             font-weight: 600;
+            line-height: 1.2; /* Prevents awkward line breaks */
+            white-space: nowrap; /* Ensures it stays on one line if possible */
         }
         #score-display {
             background-color: #2c3e50;
@@ -61,11 +63,10 @@
         #word-display {
             background-color: #e3f2fd;
             color: #1565c0;
-            font-size: 3.5em; /* Slightly larger font */
+            font-size: 3.5em;
             font-weight: bold;
             padding: 40px 20px;
             border-radius: 8px;
-            margin-top: 50px; /* Move down to avoid header */
             margin-bottom: 30px;
             min-height: 100px;
             display: flex;
@@ -74,8 +75,8 @@
             border: 2px solid #90caf9;
         }
         #options-container {
-            display: flex; /* Use flexbox for horizontal layout */
-            flex-direction: column; /* Stack buttons vertically */
+            display: flex;
+            flex-direction: column;
             gap: 15px;
             margin-bottom: 30px;
         }
@@ -90,8 +91,9 @@
             color: #444;
             font-weight: 600;
             text-align: left;
-            width: 100%; /* Make button width full */
-            white-space: normal; /* Allow text to wrap if needed */
+            width: 100%;
+            white-space: normal; /* Allows text to wrap */
+            word-break: break-word; /* Prevents long words from overflowing */
         }
         .option-btn:hover {
             background-color: #e9ecef;
@@ -178,24 +180,69 @@
         #next-set-btn:hover {
             background-color: #388e3c;
         }
+
+        /* Section Selection Screen */
+        #section-select-screen {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            text-align: center;
+        }
+        #section-select-screen h2 {
+            font-size: 2em;
+            color: #1a202c;
+            margin-bottom: 20px;
+        }
+        .section-btn {
+            background-color: #fff;
+            border: 2px solid #007bff;
+            color: #007bff;
+            border-radius: 8px;
+            padding: 20px;
+            font-size: 1.5em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+        .section-btn:hover {
+            background-color: #007bff;
+            color: white;
+            box-shadow: 0 4px 15px rgba(0, 123, 255, 0.2);
+        }
+        #quiz-screen {
+            display: none; /* Hidden by default */
+        }
     </style>
 </head>
 <body>
     <div class="quiz-container">
-        <div class="header-container">
-            <h1>Target 1900 - セクション4</h1>
-            <div id="score-display">スコア: <span id="score">0</span> / <span id="total-questions">0</span></div>
+        <div id="section-select-screen">
+            <div class="header-container">
+                <h1>Target 1900 - セクション4</h1>
+            </div>
+            <h2>どの10単語に挑戦しますか？</h2>
+            <div id="section-buttons-container">
+                </div>
         </div>
-        <p>単語の意味を選んでみよう！</p>
-        <div id="word-display">単語</div>
-        <div id="options-container"></div>
-        <div id="result"></div>
-        <button id="next-btn" style="display: none;">次の問題へ</button>
-        
-        <div id="set-result-container">
-            <h2 id="set-result-title"></h2>
-            <p id="set-result-text"></p>
-            <button id="next-set-btn" style="display: none;">次の10単語へ</button>
+
+        <div id="quiz-screen">
+            <div class="header-container">
+                <h1>Target 1900 - セクション4</h1>
+                <div id="score-display">スコア: <span id="score">0</span> / <span id="total-questions">0</span></div>
+            </div>
+            <p>単語の意味を選んでみよう！</p>
+            <div id="word-display">単語</div>
+            <div id="options-container"></div>
+            <div id="result"></div>
+            <button id="next-btn" style="display: none;">次の問題へ</button>
+            
+            <div id="set-result-container">
+                <h2 id="set-result-title"></h2>
+                <p id="set-result-text"></p>
+                <button id="back-to-sections-btn" style="display: none; background-color: #6c757d;">セクション選択に戻る</button>
+                <button id="next-set-btn" style="display: none;">次の10単語へ</button>
+            </div>
         </div>
     </div>
 
@@ -304,14 +351,18 @@
             { en: "nevertheless", jp: "それにもかかわらず（≒ nonetheless ⇒ 1000）" }
         ];
 
-        let currentSetIndex = 0; // Tracks the current set of 10 words
-        let currentWordIndexInSet = 0; // Tracks the current word within the set
         let currentSetWords = [];
+        let currentWordIndexInSet = 0;
         let scoreInSet = 0;
         let totalScore = 0;
         let answered = false;
 
         const SET_SIZE = 10;
+        const START_NUMBER = 301; // The starting number of the section
+
+        const sectionSelectScreen = document.getElementById('section-select-screen');
+        const quizScreen = document.getElementById('quiz-screen');
+        const sectionButtonsContainer = document.getElementById('section-buttons-container');
 
         const wordDisplay = document.getElementById('word-display');
         const optionsContainer = document.getElementById('options-container');
@@ -320,6 +371,7 @@
         const scoreDisplay = document.getElementById('score');
         const totalQuestionsDisplay = document.getElementById('total-questions');
         const setResultContainer = document.getElementById('set-result-container');
+        const backToSectionsBtn = document.getElementById('back-to-sections-btn');
         const nextSetBtn = document.getElementById('next-set-btn');
 
         // Function to shuffle an array
@@ -330,32 +382,37 @@
             }
         }
 
-        // Initialize quiz by preparing the first set
+        // Initialize quiz by displaying section selection
         function initializeQuiz() {
-            shuffleArray(allWords); // Shuffle the entire list once
-            currentSetIndex = 0;
-            totalScore = 0;
-            startNextSet();
+            createSectionButtons();
+            showScreen('section-select');
         }
 
-        // Starts a new set of 10 words
-        function startNextSet() {
-            const startIndex = currentSetIndex * SET_SIZE;
-            const endIndex = startIndex + SET_SIZE;
-            if (startIndex >= allWords.length) {
-                endQuiz();
-                return;
+        // Creates buttons for each 10-word section
+        function createSectionButtons() {
+            sectionButtonsContainer.innerHTML = '';
+            for (let i = 0; i < allWords.length / SET_SIZE; i++) {
+                const startNum = START_NUMBER + (i * SET_SIZE);
+                const endNum = startNum + SET_SIZE - 1;
+                const button = document.createElement('button');
+                button.textContent = `No. ${startNum} - ${endNum}`;
+                button.classList.add('section-btn');
+                button.dataset.sectionIndex = i;
+                button.addEventListener('click', () => startQuizForSection(i));
+                sectionButtonsContainer.appendChild(button);
             }
+        }
 
-            // Reset set variables
+        // Starts the quiz with a selected section
+        function startQuizForSection(sectionIndex) {
+            const startIndex = sectionIndex * SET_SIZE;
+            const endIndex = startIndex + SET_SIZE;
             currentSetWords = allWords.slice(startIndex, endIndex);
+            shuffleArray(currentSetWords); // Shuffle words within the selected set
+            
             currentWordIndexInSet = 0;
             scoreInSet = 0;
-            
-            // Hide result container
-            setResultContainer.style.display = 'none';
-
-            // Start the first question of the new set
+            showScreen('quiz');
             displayQuestion();
         }
 
@@ -374,8 +431,9 @@
             const currentWord = currentSetWords[currentWordIndexInSet];
             wordDisplay.textContent = currentWord.en;
 
-            // Update total questions count
-            totalQuestionsDisplay.textContent = totalScore + scoreInSet;
+            // Update score display
+            scoreDisplay.textContent = totalScore + scoreInSet;
+            totalQuestionsDisplay.textContent = totalScore + currentWordIndexInSet;
 
             // Generate options (correct + 3 incorrect)
             const correctMeaning = currentWord.jp;
@@ -426,52 +484,28 @@
             }
 
             nextBtn.style.display = 'block';
+            totalQuestionsDisplay.textContent = totalScore + currentWordIndexInSet + 1; // Update total questions after checking
         }
 
         // Move to the next question in the current set
         nextBtn.addEventListener('click', () => {
             currentWordIndexInSet++;
-            scoreDisplay.textContent = totalScore + scoreInSet; // Update score immediately
             displayQuestion();
         });
 
         // Ends the current 10-word set
         function endSet() {
             totalScore += scoreInSet;
-            scoreDisplay.textContent = totalScore;
-            totalQuestionsDisplay.textContent = totalScore; // This should be total questions answered
 
-            wordDisplay.textContent = `10単語クリア！`;
+            wordDisplay.textContent = `このセットをクリア！`;
             optionsContainer.innerHTML = '';
             nextBtn.style.display = 'none';
             resultDisplay.textContent = '';
             
             setResultContainer.style.display = 'block';
             document.getElementById('set-result-title').textContent = `今回のセットの結果: ${scoreInSet} / ${SET_SIZE} 問正解！`;
-            document.getElementById('set-result-text').textContent = '次の10単語に挑戦しますか？';
-            nextSetBtn.style.display = 'block';
+            document.getElementById('set-result-text').textContent = 'お疲れ様でした！';
             
-            currentSetIndex++;
-        }
-
-        // Moves to the next set
-        nextSetBtn.addEventListener('click', () => {
-            startNextSet();
-        });
-        
-        // Ends the entire quiz
-        function endQuiz() {
-            wordDisplay.textContent = '全問終了！';
-            optionsContainer.innerHTML = '';
-            nextBtn.style.display = 'none';
-            setResultContainer.style.display = 'block';
-            document.getElementById('set-result-title').textContent = `クイズ終了！`;
-            document.getElementById('set-result-text').textContent = `お疲れ様でした！最終スコアは ${totalScore} / ${allWords.length} です。`;
-            nextSetBtn.style.display = 'none';
-        }
-
-        // Start the quiz when the page loads
-        document.addEventListener('DOMContentLoaded', initializeQuiz);
-    </script>
-</body>
-</html>
+            // Show buttons for next set or back to selection
+            const sectionIndex = (START_NUMBER - 1) + (allWords.indexOf(currentSetWords[0])); // Get the original index to calculate the next set's existence
+            const nextSetExists = (sectionIndex + 
