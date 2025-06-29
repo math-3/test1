@@ -178,7 +178,7 @@
             margin-top: 10px;
         }
         #back-to-sections-btn {
-            background-color: #6c757d; /* Gray color for 'back' button */
+            background-color: #6c757d;
         }
         #back-to-sections-btn:hover {
             background-color: #5a6268;
@@ -436,25 +436,32 @@
             }
         }
 
+        // --- 修正箇所: initializeQuiz関数 ---
+        // ページ読み込み時にセクションボタンを作成し、選択画面を表示します
         function initializeQuiz() {
             createSectionButtons();
             showScreen('section-select');
         }
 
+        // --- 修正箇所: createSectionButtons関数 ---
+        // セクションボタンを動的に生成し、クリックイベントを設定します
         function createSectionButtons() {
-            sectionButtonsContainer.innerHTML = '';
-            for (let i = 0; i < allWords.length / SET_SIZE; i++) {
+            sectionButtonsContainer.innerHTML = ''; // コンテナをクリア
+            const totalSets = Math.ceil(allWords.length / SET_SIZE);
+            for (let i = 0; i < totalSets; i++) {
                 const startNum = START_NUMBER + (i * SET_SIZE);
-                const endNum = startNum + SET_SIZE - 1;
+                const endNum = Math.min(startNum + SET_SIZE - 1, START_NUMBER + allWords.length - 1);
                 const button = document.createElement('button');
                 button.textContent = `No. ${startNum} - ${endNum}`;
                 button.classList.add('section-btn');
-                button.dataset.sectionIndex = i;
+                // クリックイベントを設定
                 button.addEventListener('click', () => startQuizForSection(i));
                 sectionButtonsContainer.appendChild(button);
             }
         }
 
+        // --- 修正箇所: startQuizForSection関数 ---
+        // 選択されたセクションに基づいてクイズを開始します
         function startQuizForSection(sectionIndex) {
             const startIndex = sectionIndex * SET_SIZE;
             const endIndex = startIndex + SET_SIZE;
@@ -463,7 +470,10 @@
             
             currentWordIndexInSet = 0;
             scoreInSet = 0;
+            
+            // クイズ画面に切り替える
             showScreen('quiz');
+            // 最初の問題を表示
             displayQuestion();
         }
 
@@ -526,17 +536,4 @@
             }
 
             nextBtn.style.display = 'block';
-            totalQuestionsDisplay.textContent = totalScore + currentWordIndexInSet + 1;
-        }
-
-        nextBtn.addEventListener('click', () => {
-            currentWordIndexInSet++;
-            displayQuestion();
-        });
-
-        function endSet() {
-            totalScore += scoreInSet;
-
-            wordDisplay.textContent = `このセットをクリア！`;
-            optionsContainer.innerHTML = '';
-            nextBtn.st
+            totalQuestionsDisplay.te
