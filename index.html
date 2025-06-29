@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Target 1900 - Section 4 Quiz</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f4f8;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+        .quiz-container {
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 600px;
+            padding: 40px;
+            box-sizing: border-box;
+            text-align: center;
+        }
+        h1 {
+            color: #1a202c;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+        p {
+            color: #666;
+            font-size: 1.1em;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+        #word-display {
+            background-color: #e3f2fd;
+            color: #1565c0;
+            font-size: 3em;
+            font-weight: bold;
+            padding: 30px 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            min-height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid #90caf9;
+        }
+        #options-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        .option-btn {
+            background-color: #f8f9fa;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            padding: 18px;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: #444;
+            font-weight: 600;
+            text-align: left;
+        }
+        .option-btn:hover {
+            background-color: #e9ecef;
+            border-color: #b0c4de;
+        }
+        .option-btn:active {
+            transform: scale(0.98);
+        }
+        .option-btn.correct {
+            background-color: #d4edda;
+            border-color: #28a745;
+            color: #155724;
+            font-weight: bold;
+        }
+        .option-btn.incorrect {
+            background-color: #f8d7da;
+            border-color: #dc3545;
+            color: #721c24;
+            font-weight: bold;
+            animation: shake 0.5s;
+        }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+            20%, 40%, 60%, 80% { transform: translateX(5px); }
+        }
+        #result {
+            font-size: 1.5em;
+            font-weight: bold;
+            min-height: 30px;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+        #next-btn {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 15px 30px;
+            font-size: 1.2em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            width: 100%;
+        }
+        #next-btn:hover {
+            background-color: #0056b3;
+        }
+        #next-btn:active {
+            transform: scale(0.99);
+        }
+        #score-display {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background-color: #2c3e50;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 1.2em;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+<body>
+    <div class="quiz-container">
+        <h1>Target 1900 - セクション4</h1>
+        <p>単語の意味を選んでみよう！</p>
+        <div id="word-display">単語</div>
+        <div id="options-container"></div>
+        <div id="result"></div>
+        <button id="next-btn" style="display: none;">次の問題へ</button>
+    </div>
+    <div id="score-display">スコア: <span id="score">0</span> / <span id="total">0</span></div>
+
+    <script>
+        // ユーザーが提供した正確な単語リスト
+        const words = [
+            { en: "predict", jp: "を予言［予測］する" },
+            { en: "examine", jp: "を調べる；を診察する；を尋問する" },
+            { en: "trust", jp: "を信頼する；を（信頼して）託す" },
+            { en: "stick", jp: "を動けなくする；を突き刺す；（～に）くっつく（to / on）" },
+            { en: "emerge", jp: "現れる；明らかになる；台頭する" },
+            { en: "vary", jp: "さまざまである；変わる；を変える" },
+            { en: "release", jp: "を放出する；を解放する；を発表する" },
+            { en: "divide", jp: "を分ける；分かれる" },
+            { en: "enable", jp: "（人）が...できるようにする；を可能にする" },
+            { en: "judge", jp: "（を）判断する；に判決を下す" },
+            { en: "rely", jp: "頼る（≒ depend ⇒ 36）" },
+            { en: "engage", jp: "を従事させる；を（～として）雇う（as）；（～に）従事する（in / with）" },
+            { en: "shift", jp: "を変える，移す；変わる；移動する" },
+            { en: "adopt", jp: "を採用する；（態度など）をとる；を養子にする" },
+            { en: "acquire", jp: "を得る；を習得する" },
+            { en: "expand", jp: "（を）拡大する；（を）詳説する" },
+            { en: "refuse", jp: "を拒む；を断る；拒絶する" },
+            { en: "strike", jp: "の心を打つ；を襲う；を打つ；（に）ぶつかる" },
+            { en: "repeat", jp: "（を）繰り返す；を復唱する" },
+            { en: "consume", jp: "を消費する；を食べる，飲む" },
+            { en: "confuse", jp: "を混同する；を当惑させる" },
+            { en: "select", jp: "を選ぶ，えり抜く" },
+            { en: "evolve", jp: "（徐々に）発展する；進化する" },
+            { en: "convince", jp: "を納得［確信］させる" },
+            { en: "recall", jp: "を思い出す；を呼び戻す" },
+            { en: "destroy", jp: "を破壊する；（人）を破滅させる" },
+            { en: "preserve", jp: "を保存する；を保持する；を保護する" },
+            { en: "organize", jp: "を準備する；を組織する" },
+            { en: "warn", jp: "（人）に（～を）警告［注意］する（of / against）" },
+            { en: "address", jp: "（問題など）に対処する；に演説する；（手紙など）を（～宛てに）出す（to）" },
+            { en: "operate", jp: "を操作する；機能する；手術する" },
+            { en: "participate", jp: "参加する" },
+            { en: "surround", jp: "を取り巻く；にまつわる" },
+            { en: "flow", jp: "流れる；（～から）生じる（from）" },
+            { en: "bore", jp: "（人）を退屈させる，うんざりさせる" },
+            { en: "complain", jp: "（と）不平［苦情］を言う；訴える" },
+            { en: "host", jp: "を主催する；のホスト役を務める" },
+            { en: "combine", jp: "を（～と）結び付ける（with）；（～と）結び付く（with）" },
+            { en: "extend", jp: "を伸［延］ばす；伸びる；及ぶ" },
+            { en: "appreciate", jp: "を正当に評価する；を鑑賞する；を感謝する" },
+            { en: "target", jp: "（到達・攻撃）目標；的" },
+            { en: "element", jp: "要素，成分；元素；〔an / ofで〕少しの" },
+            { en: "principle", jp: "原則，原理；主義，信条" },
+            { en: "phenomenon", jp: "現象" },
+            { en: "atmosphere", jp: "〔the ～〕大気；雰囲気" },
+            { en: "origin", jp: "起源；源" },
+            { en: "personality", jp: "個性，性格" },
+            { en: "capacity", jp: "（最大）容量，収容能力；（潜在）能力" },
+            { en: "profit", jp: "利益；収益（率）；得" },
+            { en: "circumstance", jp: "〔通例～s〕状況，事情；境遇" },
+            { en: "manner", jp: "〔～s〕作法；方法；物腰" },
+            { en: "threat", jp: "脅威；（悪い）兆し；脅迫" },
+            { en: "resident", jp: "居住者；滞在者" },
+            { en: "wealth", jp: "富；資源；富裕" },
+            { en: "institution", jp: "機関；協会；施設；制度" },
+            { en: "authority", jp: "〔通例 the ～ties〕（関係）当局；権威；権限" },
+            { en: "vote", jp: "投票；投票結果；〔the ～〕選挙権" },
+            { en: "sight", jp: "光景；〔the ～s〕名所；見（え）ること；視野；視力" },
+            { en: "campaign", jp: "運動；軍事行動" },
+            { en: "fund", jp: "〔しばしば～s〕基金，資金" },
+            { en: "web", jp: "〔the W-〕ウェブ；（クモの）巣" },
+            { en: "symbol", jp: "象徴，シンボル；記号；標章" },
+            { en: "analysis", jp: "分析（結果）（⇔ synthesis ⇒ 1868）" },
+            { en: "version", jp: "（本・製品などの）版；解釈" },
+            { en: "perspective", jp: "観点，見方；大局観；遠近法" },
+            { en: "crisis", jp: "危機" },
+            { en: "disaster", jp: "災害；惨事" },
+            { en: "lecture", jp: "講義，講演；説教" },
+            { en: "psychology", jp: "心理学；心理（状態）" },
+            { en: "gender", jp: "（社会的・文化的）性，性別" },
+            { en: "custom", jp: "（社会的な）慣習；〔～s〕税関；〔～s〕関税" },
+            { en: "court", jp: "裁判所，法廷；裁判；宮廷；中庭" },
+            { en: "desert", jp: "砂漠；不毛の地" },
+            { en: "soil", jp: "土地，土壌；（悪事などの）温床" },
+            { en: "agriculture", jp: "農業；農学，畜産" },
+            { en: "fossil", jp: "化石；時代遅れの人［物］" },
+            { en: "document", jp: "（公）文書，書類；記録，資料" },
+            { en: "vocabulary", jp: "語彙" },
+            { en: "intelligent", jp: "聡明な；知能を有する" },
+            { en: "conscious", jp: "意識して，気づいて（≒ aware）" },
+            { en: "capable", jp: "能力がある；有能な" },
+            { en: "accurate", jp: "正確な；精密な" },
+            { en: "fundamental", jp: "基本的な；必須の" },
+            { en: "artificial", jp: "人工の（⇔ natural 自然の）；不自然な" },
+            { en: "firm", jp: "確固たる；堅固な；安定した" },
+            { en: "overall", jp: "総合的な；全体的な" },
+            { en: "rural", jp: "田舎の（⇔ urban ⇒ 299），田園の" },
+            { en: "military", jp: "軍の，軍事（用）の" },
+            { en: "nuclear", jp: "核の，原子力の" },
+            { en: "biological", jp: "生物学（上）の" },
+            { en: "constant", jp: "絶え間ない；一定の" },
+            { en: "severe", jp: "（人・規律・事態・天気などが）厳しい；猛烈な" },
+            { en: "visual", jp: "視覚の；目に見える" },
+            { en: "enormous", jp: "莫大な，巨大な" },
+            { en: "convenient", jp: "便利な，都合のいい" },
+            { en: "domestic", jp: "家庭の；国内の；（動物が）飼いならされた" },
+            { en: "mass", jp: "大規模な，大量の；大衆（向け）の" },
+            { en: "typical", jp: "典型的な；（～に）特有の（of）" },
+            { en: "overseas", jp: "海外へ［に，で］（≒ abroad）" },
+            { en: "nevertheless", jp: "それにもかかわらず（≒ nonetheless ⇒ 1000）" }
+        ];
+
+        let currentWordIndex = 0;
+        let score = 0;
+        let totalQuestions = 0;
+        let answered = false;
+
+        const wordDisplay = document.getElementById('word-display');
+        const optionsContainer = document.getElementById('options-container');
+        const resultDisplay = document.getElementById('result');
+        const nextBtn = document.getElementById('next-btn');
+        const scoreDisplay = document.getElementById('score');
+        const totalDisplay = document.getElementById('total');
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+        function displayQuestion() {
+            if (currentWordIndex >= words.length) {
+                endQuiz();
+                return;
+            }
+
+            answered = false;
+            resultDisplay.textContent = '';
+            nextBtn.style.display = 'none';
+            optionsContainer.innerHTML = '';
+
+            const currentWord = words[currentWordIndex];
+            wordDisplay.textContent = currentWord.en;
+
+            // Generate options
+            const correctMeaning = currentWord.jp;
+            let options = [correctMeaning];
+
+            // Get 3 random incorrect meanings
+            const incorrectOptions = words.filter(word => word.jp !== correctMeaning);
+            shuffleArray(incorrectOptions);
+            options = options.concat(incorrectOptions.slice(0, 3).map(word => word.jp));
+
+            // Shuffle options
+            shuffleArray(options);
+
+            options.forEach(option => {
+                const button = document.createElement('button');
+                button.textContent = option;
+                button.classList.add('option-btn');
+                button.addEventListener('click', () => checkAnswer(button, option, correctMeaning));
+                optionsContainer.appendChild(button);
+            });
+            totalQuestions++;
+            totalDisplay.textContent = totalQuestions;
+        }
+
+        function checkAnswer(selectedButton, selectedMeaning, correctMeaning) {
+            if (answered) return;
+            answered = true;
+
+            const buttons = document.querySelectorAll('.option-btn');
+            buttons.forEach(btn => btn.disabled = true);
+
+            if (selectedMeaning === correctMeaning) {
+                resultDisplay.textContent = '正解！素晴らしい！';
+                resultDisplay.style.color = '#28a745';
+                selectedButton.classList.add('correct');
+                score++;
+                scoreDisplay.textContent = score;
+            } else {
+                resultDisplay.textContent = `不正解... 正解は「${correctMeaning}」です。`;
+                resultDisplay.style.color = '#dc3545';
+                selectedButton.classList.add('incorrect');
+                // Highlight the correct answer
+                buttons.forEach(btn => {
+                    if (btn.textContent === correctMeaning) {
+                        btn.classList.add('correct');
+                    }
+                });
+            }
+
+            nextBtn.style.display = 'block';
+        }
+
+        nextBtn.addEventListener('click', () => {
+            currentWordIndex++;
+            displayQuestion();
+        });
+
+        function endQuiz() {
+            wordDisplay.textContent = 'クイズ終了！';
+            optionsContainer.innerHTML = '';
+            resultDisplay.textContent = `お疲れ様でした！スコアは ${score} / ${totalQuestions} でした。`;
+            resultDisplay.style.color = '#1a202c';
+            nextBtn.style.display = 'none';
+        }
+
+        // Initialize the quiz
+        shuffleArray(words);
+        displayQuestion();
+    </script>
+</body>
+</html>
