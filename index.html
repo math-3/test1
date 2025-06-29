@@ -3,533 +3,286 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Target 1900 - Section 4 Quiz</title>
+    <title>単語検索</title>
     <style>
-        /* General Body and Layout */
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
             background-color: #f0f4f8;
-            color: #333;
+            color: #2c3e50;
             display: flex;
-            flex-direction: column;
-            justify-content: flex-start;
+            justify-content: center;
             align-items: center;
             min-height: 100vh;
             margin: 0;
             padding: 20px;
             box-sizing: border-box;
         }
-        .quiz-container {
+
+        .container {
             background-color: #ffffff;
-            border-radius: 12px;
-            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
-            width: 100%;
-            max-width: 700px;
             padding: 40px;
-            box-sizing: border-box;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 600px;
             text-align: center;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
 
-        /* Header / Title */
-        .header-container {
-            width: 100%;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            text-align: left;
+        .container:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
         }
-        .header-container h1 {
-            font-size: 1.8em;
-            color: #1a202c;
-            margin: 0;
-            font-weight: 600;
-            line-height: 1.2;
-            white-space: nowrap;
+
+        h1 {
+            color: #34495e;
+            margin-bottom: 25px;
+            font-size: 2.5em;
+            font-weight: 700;
         }
-        #score-display {
-            background-color: #2c3e50;
-            color: white;
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-weight: bold;
+
+        p {
             font-size: 1.1em;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            line-height: 1.6;
+            margin-bottom: 30px;
+            color: #7f8c8d;
         }
 
-        /* Main Quiz Elements */
-        #word-display {
-            background-color: #e3f2fd;
-            color: #1565c0;
-            font-size: 3.5em;
-            font-weight: bold;
-            padding: 40px 20px;
-            border-radius: 8px;
-            margin-bottom: 30px;
-            min-height: 100px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border: 2px solid #90caf9;
-        }
-        #options-container {
+        .search-container {
             display: flex;
             flex-direction: column;
+            align-items: center;
             gap: 15px;
-            margin-bottom: 30px;
         }
-        .option-btn {
-            background-color: #f8f9fa;
-            border: 2px solid #ddd;
-            border-radius: 8px;
-            padding: 18px;
-            font-size: 1.1em;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            color: #444;
-            font-weight: 600;
-            text-align: left;
+
+        #searchInput {
             width: 100%;
-            white-space: normal;
-            word-break: break-word;
+            padding: 15px 20px;
+            font-size: 1.2em;
+            border: 2px solid #bdc3c7;
+            border-radius: 8px;
+            box-sizing: border-box;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
         }
-        .option-btn:hover {
-            background-color: #e9ecef;
-            border-color: #b0c4de;
+
+        #searchInput:focus {
+            border-color: #3498db;
+            outline: none;
+            box-shadow: 0 0 10px rgba(52, 152, 219, 0.2);
         }
-        .option-btn:active {
-            transform: scale(0.99);
+        
+        #searchInput::placeholder {
+            color: #95a5a6;
         }
-        .option-btn.correct {
-            background-color: #d4edda;
-            border-color: #28a745;
-            color: #155724;
-            font-weight: bold;
-        }
-        .option-btn.incorrect {
-            background-color: #f8d7da;
-            border-color: #dc3545;
-            color: #721c24;
-            font-weight: bold;
-            animation: shake 0.5s;
-        }
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
-            20%, 40%, 60%, 80% { transform: translateX(5px); }
-        }
-        #result {
-            font-size: 1.5em;
-            font-weight: bold;
-            min-height: 30px;
-            margin-bottom: 20px;
-            line-height: 1.5;
-        }
-        #next-btn {
-            background-color: #007bff;
+
+        button {
+            background-color: #3498db;
             color: white;
             border: none;
-            border-radius: 8px;
             padding: 15px 30px;
             font-size: 1.2em;
             font-weight: bold;
+            border-radius: 8px;
             cursor: pointer;
             transition: background-color 0.3s ease, transform 0.2s ease;
             width: 100%;
         }
-        #next-btn:hover {
-            background-color: #0056b3;
-        }
-        #next-btn:active {
-            transform: scale(0.99);
-        }
-        
-        /* Quiz End & Set Clear UI */
-        #set-result-container {
-            margin-top: 20px;
-            padding: 20px;
-            background-color: #e9f5ff;
-            border: 2px solid #b3e5fc;
-            border-radius: 10px;
-            display: none;
-        }
-        #set-result-container h2 {
-            margin-top: 0;
-            color: #0288d1;
-            font-size: 2em;
-        }
-        #set-result-container p {
-            font-size: 1.2em;
-            color: #01579b;
-        }
-        #back-to-sections-btn, #next-set-btn {
-            background-color: #4caf50;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            padding: 15px 30px;
-            font-size: 1.2em;
-            font-weight: bold;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-            width: 100%;
-            margin-top: 10px;
-        }
-        #back-to-sections-btn {
-            background-color: #6c757d;
-        }
-        #back-to-sections-btn:hover {
-            background-color: #5a6268;
-        }
-        #next-set-btn:hover {
-            background-color: #388e3c;
+
+        button:hover {
+            background-color: #2980b9;
+            transform: translateY(-2px);
         }
 
-        /* Section Selection Screen */
-        #section-select-screen {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            text-align: center;
+        button:active {
+            transform: translateY(0);
         }
-        #section-select-screen h2 {
-            font-size: 2em;
-            color: #1a202c;
-            margin-bottom: 20px;
-        }
-        .section-btn {
-            background-color: #fff;
-            border: 2px solid #007bff;
-            color: #007bff;
-            border-radius: 8px;
-            padding: 20px;
+
+        #result {
+            margin-top: 30px;
             font-size: 1.5em;
             font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            width: 100%;
-        }
-        .section-btn:hover {
-            background-color: #007bff;
-            color: white;
-            box-shadow: 0 4px 15px rgba(0, 123, 255, 0.2);
-        }
-        #quiz-screen {
-            display: none;
+            color: #2c3e50;
+            min-height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-top: 2px solid #ecf0f1;
+            padding-top: 25px;
         }
 
-        /* --- DuckDuckGo Search Section --- */
-        .search-container {
-            width: 100%;
-            max-width: 700px;
-            margin-top: 30px;
-            padding: 20px;
-            background-color: #ffffff;
-            border-radius: 12px;
-            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
-            text-align: center;
+        .result-found {
+            color: #27ae60;
         }
-        .search-container h3 {
-            margin-top: 0;
-            color: #444;
+
+        .result-not-found {
+            color: #c0392b;
         }
-        .search-form-ddg {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-        .search-form-ddg input[type="text"] {
-            padding: 12px 15px;
-            font-size: 1.1em;
-            border: 2px solid #ccc;
-            border-radius: 25px;
-            flex-grow: 1;
-            max-width: 400px;
-            transition: border-color 0.3s;
-        }
-        .search-form-ddg input[type="text"]:focus {
-            outline: none;
-            border-color: #007bff;
-            box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
-        }
-        .search-form-ddg button {
-            background-color: #E27924; /* DuckDuckGo's color */
-            color: white;
-            border: none;
-            border-radius: 25px;
-            padding: 12px 20px;
-            font-size: 1.1em;
-            font-weight: bold;
-            cursor: pointer;
-            transition: background-color 0.3s;
-        }
-        .search-form-ddg button:hover {
-            background-color: #CC6F21;
-        }
-        .search-results-ddg {
-            width: 100%;
-            height: 500px; /* iframeの高さは必要に応じて調整してください */
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            display: none; /* 最初は非表示 */
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 30px 20px;
+            }
+
+            h1 {
+                font-size: 2em;
+            }
+
+            p {
+                font-size: 1em;
+            }
+
+            #searchInput, button {
+                font-size: 1.1em;
+                padding: 12px;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="quiz-container">
-        <div id="section-select-screen">
-            <div class="header-container">
-                <h1>Target 1900 - セクション4</h1>
-            </div>
-            <h2>どの10単語に挑戦しますか？</h2>
-            <div id="section-buttons-container">
-                </div>
+    <div class="container">
+        <h1>単語番号検索</h1>
+        <p>下の入力欄に単語を入力して、リスト内の番号を検索してください。</p>
+        <div class="search-container">
+            <input type="text" id="searchInput" placeholder="例: create">
+            <button onclick="searchWord()">検索</button>
         </div>
-
-        <div id="quiz-screen">
-            <div class="header-container">
-                <h1>Target 1900 - セクション4</h1>
-                <div id="score-display">スコア: <span id="score">0</span> / <span id="total-questions">0</span></div>
-            </div>
-            <p>単語の意味を選んでみよう！</p>
-            <div id="word-display">単語</div>
-            <div id="options-container"></div>
-            <div id="result"></div>
-            <button id="next-btn" style="display: none;">次の問題へ</button>
-            
-            <div id="set-result-container">
-                <h2 id="set-result-title"></h2>
-                <p id="set-result-text"></p>
-                <button id="back-to-sections-btn" style="display: none;">セクション選択に戻る</button>
-                <button id="next-set-btn" style="display: none;">次の10単語へ</button>
-            </div>
-        </div>
-    </div>
-    
-    <div class="search-container">
-        <h3>DuckDuckGoで単語を調べる (プライバシー重視)</h3>
-        <form class="search-form-ddg" action="https://duckduckgo.com/" method="get" onsubmit="return false;">
-            <input type="text" id="duckduckgo-search-input" name="q" placeholder="調べたい単語を入力">
-            <button type="submit" id="duckduckgo-search-button">検索</button>
-        </form>
-        <iframe id="duckduckgo-search-iframe" class="search-results-ddg" src="about:blank" title="DuckDuckGo Search Results"></iframe>
+        <div id="result"></div>
     </div>
 
     <script>
-        // ユーザーが提供した単語リスト（301-400）
-        const allWords = [
-            { en: "predict", jp: "を予言［予測］する" },
-            { en: "examine", jp: "を調べる；を診察する；を尋問する" },
-            { en: "trust", jp: "を信頼する；を（信頼して）託す" },
-            { en: "stick", jp: "を動けなくする；を突き刺す；（～に）くっつく（to / on）" },
-            { en: "emerge", jp: "現れる；明らかになる；台頭する" },
-            { en: "vary", jp: "さまざまである；変わる；を変える" },
-            { en: "release", jp: "を放出する；を解放する；を発表する" },
-            { en: "divide", jp: "を分ける；分かれる" },
-            { en: "enable", jp: "（人）が...できるようにする；を可能にする" },
-            { en: "judge", jp: "（を）判断する；に判決を下す" },
-            { en: "rely", jp: "頼る（≒ depend ⇒ 36）" },
-            { en: "engage", jp: "を従事させる；を（～として）雇う（as）；（～に）従事する（in / with）" },
-            { en: "shift", jp: "を変える，移す；変わる；移動する" },
-            { en: "adopt", jp: "を採用する；（態度など）をとる；を養子にする" },
-            { en: "acquire", jp: "を得る；を習得する" },
-            { en: "expand", jp: "（を）拡大する；（を）詳説する" },
-            { en: "refuse", jp: "を拒む；を断る；拒絶する" },
-            { en: "strike", jp: "の心を打つ；を襲う；を打つ；（に）ぶつかる" },
-            { en: "repeat", jp: "（を）繰り返す；を復唱する" },
-            { en: "consume", jp: "を消費する；を食べる，飲む" },
-            { en: "confuse", jp: "を混同する；を当惑させる" },
-            { en: "select", jp: "を選ぶ，えり抜く" },
-            { en: "evolve", jp: "（徐々に）発展する；進化する" },
-            { en: "convince", jp: "を納得［確信］させる" },
-            { en: "recall", jp: "を思い出す；を呼び戻す" },
-            { en: "destroy", jp: "を破壊する；（人）を破滅させる" },
-            { en: "preserve", jp: "を保存する；を保持する；を保護する" },
-            { en: "organize", jp: "を準備する；を組織する" },
-            { en: "warn", jp: "（人）に（～を）警告［注意］する（of / against）" },
-            { en: "address", jp: "（問題など）に対処する；に演説する；（手紙など）を（～宛てに）出す（to）" },
-            { en: "operate", jp: "を操作する；機能する；手術する" },
-            { en: "participate", jp: "参加する" },
-            { en: "surround", jp: "を取り巻く；にまつわる" },
-            { en: "flow", jp: "流れる；（～から）生じる（from）" },
-            { en: "bore", jp: "（人）を退屈させる，うんざりさせる" },
-            { en: "complain", jp: "（と）不平［苦情］を言う；訴える" },
-            { en: "host", jp: "を主催する；のホスト役を務める" },
-            { en: "combine", jp: "を（～と）結び付ける（with）；（～と）結び付く（with）" },
-            { en: "extend", jp: "を伸［延］ばす；伸びる；及ぶ" },
-            { en: "appreciate", jp: "を正当に評価する；を鑑賞する；を感謝する" },
-            { en: "target", jp: "（到達・攻撃）目標；的" },
-            { en: "element", jp: "要素，成分；元素；〔an / ofで〕少しの" },
-            { en: "principle", jp: "原則，原理；主義，信条" },
-            { en: "phenomenon", jp: "現象" },
-            { en: "atmosphere", jp: "〔the ～〕大気；雰囲気" },
-            { en: "origin", jp: "起源；源" },
-            { en: "personality", jp: "個性，性格" },
-            { en: "capacity", jp: "（最大）容量，収容能力；（潜在）能力" },
-            { en: "profit", jp: "利益；収益（率）；得" },
-            { en: "circumstance", jp: "〔通例～s〕状況，事情；境遇" },
-            { en: "manner", jp: "〔～s〕作法；方法；物腰" },
-            { en: "threat", jp: "脅威；（悪い）兆し；脅迫" },
-            { en: "resident", jp: "居住者；滞在者" },
-            { en: "wealth", jp: "富；資源；富裕" },
-            { en: "institution", jp: "機関；協会；施設；制度" },
-            { en: "authority", jp: "〔通例 the ～ties〕（関係）当局；権威；権限" },
-            { en: "vote", jp: "投票；投票結果；〔the ～〕選挙権" },
-            { en: "sight", jp: "光景；〔the ～s〕名所；見（え）ること；視野；視力" },
-            { en: "campaign", jp: "運動；軍事行動" },
-            { en: "fund", jp: "〔しばしば～s〕基金，資金" },
-            { en: "web", jp: "〔the W-〕ウェブ；（クモの）巣" },
-            { en: "symbol", jp: "象徴，シンボル；記号；標章" },
-            { en: "analysis", jp: "分析（結果）（⇔ synthesis ⇒ 1868）" },
-            { en: "version", jp: "（本・製品などの）版；解釈" },
-            { en: "perspective", jp: "観点，見方；大局観；遠近法" },
-            { en: "crisis", jp: "危機" },
-            { en: "disaster", jp: "災害；惨事" },
-            { en: "lecture", jp: "講義，講演；説教" },
-            { en: "psychology", jp: "心理学；心理（状態）" },
-            { en: "gender", jp: "（社会的・文化的）性，性別" },
-            { en: "custom", jp: "（社会的な）慣習；〔～s〕税関；〔～s〕関税" },
-            { en: "court", jp: "裁判所，法廷；裁判；宮廷；中庭" },
-            { en: "desert", jp: "砂漠；不毛の地" },
-            { en: "soil", jp: "土地，土壌；（悪事などの）温床" },
-            { en: "agriculture", jp: "農業；農学，畜産" },
-            { en: "fossil", jp: "化石；時代遅れの人［物］" },
-            { en: "document", jp: "（公）文書，書類；記録，資料" },
-            { en: "vocabulary", jp: "語彙" },
-            { en: "intelligent", jp: "聡明な；知能を有する" },
-            { en: "conscious", jp: "意識して，気づいて（≒ aware）" },
-            { en: "capable", jp: "能力がある；有能な" },
-            { en: "accurate", jp: "正確な；精密な" },
-            { en: "fundamental", jp: "基本的な；必須の" },
-            { en: "artificial", jp: "人工の（⇔ natural 自然の）；不自然な" },
-            { en: "firm", jp: "確固たる；堅固な；安定した" },
-            { en: "overall", jp: "総合的な；全体的な" },
-            { en: "rural", jp: "田舎の（⇔ urban ⇒ 299），田園の" },
-            { en: "military", jp: "軍の，軍事（用）の" },
-            { en: "nuclear", jp: "核の，原子力の" },
-            { en: "biological", jp: "生物学（上）の" },
-            { en: "constant", jp: "絶え間ない；一定の" },
-            { en: "severe", jp: "（人・規律・事態・天気などが）厳しい；猛烈な" },
-            { en: "visual", jp: "視覚の；目に見える" },
-            { en: "enormous", jp: "莫大な，巨大な" },
-            { en: "convenient", jp: "便利な，都合のいい" },
-            { en: "domestic", jp: "家庭の；国内の；（動物が）飼いならされた" },
-            { en: "mass", jp: "大規模な，大量の；大衆（向け）の" },
-            { en: "typical", jp: "典型的な；（～に）特有の（of）" },
-            { en: "overseas", jp: "海外へ［に，で］（≒ abroad）" },
-            { en: "nevertheless", jp: "それにもかかわらず（≒ nonetheless ⇒ 1000）" }
-        ];
+        // 単語と番号のデータセット
+        const wordList = {
+            "create": "1", "increase": "2", "improve": "3", "mean": "4", "own": "5",
+            "include": "6", "consider": "7", "allow": "8", "suggest": "9", "produce": "10",
+            "decide": "11", "offer": "12", "require": "13", "share": "14", "store": "15",
+            "tend": "16", "concern": "17", "describe": "18", "involve": "19", "reduce": "20",
+            "design": "21", "force": "22", "limit": "23", "bear": "24", "affect": "25",
+            "deal": "26", "avoid": "27", "relate": "28", "realize": "29", "encourage": "30",
+            "compare": "31", "measure": "32", "exist": "33", "mark": "34", "challenge": "35",
+            "depend": "36", "object": "37", "demand": "38", "found": "39", "complete": "40",
+            "idea": "41", "accord": "42", "company": "43", "interest": "44", "research": "45",
+            "cause": "46", "reason": "47", "effect": "48", "influence": "49", "situation": "50",
+            "environment": "51", "skill": "52", "matter": "53", "view": "54", "value": "55",
+            "species": "56", "thought": "57", "knowledge": "58", "memory": "59", "practice": "60",
+            "benefit": "61", "theory": "62", "issue": "63", "experiment": "64", "article": "65",
+            "focus": "66", "subject": "67", "project": "68", "quality": "69", "role": "70",
+            "term": "71", "statement": "72", "material": "73", "evidence": "74", "source": "75",
+            "community": "76", "technology": "77", "culture": "78", "appropriate": "79", "likely": "80",
+            "possible": "81", "individual": "82", "public": "83", "common": "84", "certain": "85",
+            "similar": "86", "recent": "87", "major": "88", "patient": "89", "particular": "90",
+            "physical": "91", "various": "92", "available": "93", "native": "94", "political": "95",
+            "due": "96", "blank": "97", "ancient": "98", "correct": "99", "despite": "100",
+            "notice": "101", "refer": "102", "approach": "103", "wonder": "104", "imagine": "105",
+            "recognize": "106", "solve": "107", "occur": "108", "argue": "109", "claim": "110",
+            "express": "111", "draw": "112", "waste": "113", "advance": "114", "spread": "115",
+            "prepare": "116", "gain": "117", "achieve": "118", "establish": "119", "supply": "120",
+            "suppose": "121", "perform": "122", "prefer": "123", "determine": "124", "treat": "125",
+            "prove": "126", "apply": "127", "mention": "128", "communicate": "129", "contain": "130",
+            "contact": "131", "regard": "132", "respect": "133", "search": "134", "connect": "135",
+            "decline": "136", "prevent": "137", "suffer": "138", "survive": "139", "publish": "140",
+            "opportunity": "141", "task": "142", "industry": "143", "medium": "144", "economy": "145",
+            "policy": "146", "account": "147", "trade": "148", "model": "149", "figure": "150",
+            "cell": "151", "image": "152", "emotion": "153", "stress": "154", "decade": "155",
+            "range": "156", "character": "157", "advantage": "158", "phrase": "159", "damage": "160",
+            "impact": "161", "method": "162", "resource": "163", "region": "164", "medicine": "165",
+            "detail": "166", "feature": "167", "function": "168", "access": "169", "item": "170",
+            "income": "171", "attitude": "172", "site": "173", "aspect": "174", "structure": "175",
+            "habit": "176", "link": "177", "instance": "178", "positive": "179", "negative": "180",
+            "complex": "181", "current": "182", "mental": "183", "specific": "184", "significant": "185",
+            "essential": "186", "official": "187", "financial": "188", "academic": "189", "aware": "190",
+            "worth": "191", "potential": "192", "active": "193", "digital": "194", "mobile": "195",
+            "novel": "196", "plastic": "197", "chemical": "198", "necessary": "199", "eventually": "200",
+            "identify": "201", "represent": "202", "indicate": "203", "manage": "204", "attend": "205",
+            "maintain": "206", "survey": "207", "replace": "208", "sort": "209", "conduct": "210",
+            "associate": "211", "attempt": "212", "promote": "213", "earn": "214", "unite": "215",
+            "feed": "216", "seek": "217", "observe": "218", "reveal": "219", "estimate": "220",
+            "reflect": "221", "attract": "222", "decrease": "223", "ignore": "224", "match": "225",
+            "define": "226", "adapt": "227", "contribute": "228", "exchange": "229", "display": "230",
+            "respond": "231", "hide": "232", "doubt": "233", "remove": "234", "wind": "235",
+            "assume": "236", "relax": "237", "satisfy": "238", "desire": "239", "succeed": "240",
+            "concept": "241", "fashion": "242", "device": "243", "charge": "244", "contrast": "245",
+            "colleague": "246", "pain": "247", "bill": "248", "content": "249", "section": "250",
+            "audience": "251", "surface": "252", "crop": "253", "topic": "254", "technique": "255",
+            "status": "256", "option": "257", "reward": "258", "race": "259", "crime": "260",
+            "conflict": "261", "struggle": "262", "context": "263", "debate": "264", "fuel": "265",
+            "pollution": "266", "trend": "267", "balance": "268", "traffic": "269", "strategy": "270",
+            "basis": "271", "consequence": "272", "aim": "273", "ancestor": "274", "gene": "275",
+            "track": "276", "revolution": "277", "progress": "278", "cognitive": "279", "ideal": "280",
+            "efficient": "281", "universal": "282", "vast": "283", "extra": "284", "entire": "285",
+            "familiar": "286", "obvious": "287", "moral": "288", "ordinary": "289", "equal": "290",
+            "previous": "291", "false": "292", "rare": "293", "legal": "294", "independent": "295",
+            "extreme": "296", "actual": "297", "willing": "298", "urban": "299", "whereas": "300",
+            "predict": "301", "examine": "302", "trust": "303", "stick": "304", "emerge": "305",
+            "vary": "306", "release": "307", "divide": "308", "enable": "309", "judge": "310",
+            "rely": "311", "engage": "312", "shift": "313", "adopt": "314", "acquire": "315",
+            "expand": "316", "refuse": "317", "strike": "318", "repeat": "319", "consume": "320",
+            "confuse": "321", "select": "322", "evolve": "323", "convince": "324", "recall": "325",
+            "destroy": "326", "preserve": "327", "organize": "328", "warn": "329", "address": "330",
+            "operate": "331", "participate": "332", "surround": "333", "flow": "334", "bore": "335",
+            "complain": "336", "host": "337", "combine": "338", "extend": "339", "appreciate": "340",
+            "target": "341", "element": "342", "principle": "343", "phenomenon": "344", "atmosphere": "345",
+            "origin": "346", "personality": "347", "capacity": "348", "profit": "349", "circumstance": "350",
+            "manner": "351", "threat": "352", "resident": "353", "wealth": "354", "institution": "355",
+            "authority": "356", "vote": "357", "sight": "358", "campaign": "359", "fund": "360",
+            "web": "361", "symbol": "362", "analysis": "363", "version": "364", "perspective": "365",
+            "crisis": "366", "disaster": "367", "lecture": "368", "psychology": "369", "gender": "370",
+            "custom": "371", "court": "372", "desert": "373", "soil": "374", "agriculture": "375",
+            "fossil": "376", "document": "377", "vocabulary": "378", "intelligent": "379", "conscious": "380",
+            "capable": "381", "accurate": "382", "fundamental": "383", "artificial": "384", "firm": "385",
+            "overall": "386", "rural": "387", "military": "388", "nuclear": "389", "biological": "390",
+            "constant": "391", "severe": "392", "visual": "393", "enormous": "394", "convenient": "395",
+            "domestic": "396", "mass": "397", "typical": "398", "overseas": "399", "nevertheless": "400",
+            "demonstrate": "401", "behave": "402", "educate": "403", "purchase": "404", "recommend": "405",
+            "admit": "406", "generate": "407", "explore": "408", "amaze": "409", "tear": "410",
+            "settle": "411", "afford": "412", "conclude": "413", "advertise": "414", "encounter": "415",
+            "remind": "416", "locate": "417", "aid": "418", "bite": "419", "deliver": "420",
+            "perceive": "421", "distinguish": "422", "imply": "423", "handle": "424", "praise": "425",
+            "appeal": "426", "insist": "427", "compete": "428", "rank": "429", "deny": "430",
+            "reject": "431", "intend": "432", "expose": "433", "favor": "434", "inspire": "435",
+            "propose": "436", "spell": "437", "breathe": "438", "repair": "439", "consist": "440",
+            "comment": "441", "instruction": "442", "religion": "443", "neighborhood": "444", "laboratory": "445",
+            "presence": "446", "confidence": "447", "harm": "448", "instrument": "449", "category": "450",
+            "capital": "451", "outcome": "452", "notion": "453", "review": "454", "trait": "455",
+            "diversity": "456", "victim": "457", "occasion": "458", "facility": "459", "stock": "460",
+            "conference": "461", "humanity": "462", "dialect": "463", "proportion": "464", "tip": "465",
+            "lawyer": "466", "stuff": "467", "comfort": "468", "philosophy": "469", "mammal": "470",
+            "quantity": "471", "landscape": "472", "tribe": "473", "organ": "474", "trial": "475",
+            "norm": "476", "code": "477", "substance": "478", "multiple": "479", "numerous": "480",
+            "narrow": "481", "widespread": "482", "sufficient": "483", "proper": "484", "linguistic": "485",
+            "annual": "486", "contemporary": "487", "contrary": "488", "strict": "489", "civil": "490",
+            "odd": "491", "unknown": "492", "superior": "493", "sensitive": "494", "violent": "495",
+            "virtual": "496", "regardless": "497", "immediate": "498", "crucial": "499", "somewhat": "500"
+        };
 
-        let currentSetWords = [];
-        let currentWordIndexInSet = 0;
-        let scoreInSet = 0;
-        let totalScore = 0;
-        let answered = false;
+        const searchInput = document.getElementById('searchInput');
+        const resultDiv = document.getElementById('result');
 
-        const SET_SIZE = 10;
-        const START_NUMBER = 301;
-
-        const sectionSelectScreen = document.getElementById('section-select-screen');
-        const quizScreen = document.getElementById('quiz-screen');
-        const sectionButtonsContainer = document.getElementById('section-buttons-container');
-
-        const wordDisplay = document.getElementById('word-display');
-        const optionsContainer = document.getElementById('options-container');
-        const resultDisplay = document.getElementById('result');
-        const nextBtn = document.getElementById('next-btn');
-        const scoreDisplay = document.getElementById('score');
-        const totalQuestionsDisplay = document.getElementById('total-questions');
-        const setResultContainer = document.getElementById('set-result-container');
-        const backToSectionsBtn = document.getElementById('back-to-sections-btn');
-        const nextSetBtn = document.getElementById('next-set-btn');
-        
-        // --- DuckDuckGo Search Elements ---
-        const duckduckgoSearchInput = document.getElementById('duckduckgo-search-input');
-        const duckduckgoSearchButton = document.getElementById('duckduckgo-search-button');
-        const duckduckgoSearchIframe = document.getElementById('duckduckgo-search-iframe');
-
-        function shuffleArray(array) {
-            for (let i = array.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [array[i], array[j]] = [array[j], array[i]];
-            }
-        }
-
-        function initializeQuiz() {
-            createSectionButtons();
-            showScreen('section-select');
-        }
-
-        function createSectionButtons() {
-            sectionButtonsContainer.innerHTML = '';
-            const totalSets = Math.ceil(allWords.length / SET_SIZE);
-            for (let i = 0; i < totalSets; i++) {
-                const startNum = START_NUMBER + (i * SET_SIZE);
-                const endNum = Math.min(startNum + SET_SIZE - 1, START_NUMBER + allWords.length - 1);
-                const button = document.createElement('button');
-                button.textContent = `No. ${startNum} - ${endNum}`;
-                button.classList.add('section-btn');
-                button.addEventListener('click', () => startQuizForSection(i));
-                sectionButtonsContainer.appendChild(button);
-            }
-        }
-
-        function startQuizForSection(sectionIndex) {
-            const startIndex = sectionIndex * SET_SIZE;
-            const endIndex = startIndex + SET_SIZE;
-            currentSetWords = allWords.slice(startIndex, endIndex);
-            shuffleArray(currentSetWords);
-            
-            currentWordIndexInSet = 0;
-            scoreInSet = 0;
-            
-            showScreen('quiz');
-            displayQuestion();
-        }
-
-        function displayQuestion() {
-            if (currentWordIndexInSet >= currentSetWords.length) {
-                endSet();
+        function searchWord() {
+            const searchTerm = searchInput.value.trim().toLowerCase();
+            resultDiv.className = ''; // Remove previous classes
+            if (searchTerm === "") {
+                resultDiv.textContent = "単語を入力してください。";
+                resultDiv.classList.add('result-not-found');
                 return;
             }
 
-            answered = false;
-            resultDisplay.textContent = '';
-            nextBtn.style.display = 'none';
-            optionsContainer.innerHTML = '';
+            const number = wordList[searchTerm];
 
-            const currentWord = currentSetWords[currentWordIndexInSet];
-            wordDisplay.textContent = currentWord.en;
-
-            scoreDisplay.textContent = totalScore + scoreInSet;
-            totalQuestionsDisplay.textContent = totalScore + currentWordIndexInSet;
-
-            const correctMeaning = currentWord.jp;
-            let options = [correctMeaning];
-
-            const incorrectOptions = allWords.filter(word => word.jp !== correctMeaning);
-            shuffleArray(incorrectOptions);
-            options = options.concat(incorrectOptions.slice(0, 3).map(word => word.jp));
-
-            shuffleArray(options);
-
-            options.forEach(option => {
-                const button = document.createElement('button');
-                button.textContent = option;
-                button.classList.add('option-btn');
-                button.addEventListener('click', () => checkAnswer(button, option, correctMeaning));
-                optionsContainer.appendChild(button);
-            });
+            if (number) {
+                resultDiv.textContent = `「${searchTerm}」の番号は ${number} です。`;
+                resultDiv.classList.add('result-found');
+            } else {
+                resultDiv.textContent = `「${searchTerm}」は見つかりませんでした。`;
+                resultDiv.classList.add('result-not-found');
+            }
         }
 
-        function checkAnswer(selectedButton, selectedMeaning, correctMeaning) {
-            if (answered) return;
-            answered = true;
-
-            const buttons = document.querySelectorAll('.option-btn');
-            buttons.forEach(btn => btn.disabled = t
+        // Allow searching with the Enter key
+        searchInput.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter') {
+                searchWord();
+            }
+        });
+    </script>
+</body>
+</html>
