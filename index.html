@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>単語検索</title>
+    <title>英単語検索</title>
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
@@ -537,6 +537,68 @@
         const resultElement = document.getElementById('result');
         const searchInput = document.getElementById('searchInput');
 
+        /**
+         * レーベンシュタイン距離を計算する関数
+         * @param {string} a - 比較対象の最初の文字列
+         * @param {string} b - 比較対象の2番目の文字列
+         * @returns {number} - 2つの文字列間のレーベンシュタイン距離
+         */
+        function levenshteinDistance(a, b) {
+            const an = a.length;
+            const bn = b.length;
+            const matrix = [];
+
+            if (an === 0) return bn;
+            if (bn === 0) return an;
+
+            for (let i = 0; i <= an; i++) {
+                matrix[i] = [i];
+            }
+
+            for (let j = 0; j <= bn; j++) {
+                matrix[0][j] = j;
+            }
+
+            for (let i = 1; i <= an; i++) {
+                for (let j = 1; j <= bn; j++) {
+                    const cost = (a[i - 1] === b[j - 1]) ? 0 : 1;
+                    matrix[i][j] = Math.min(
+                        matrix[i - 1][j] + 1,      // 削除
+                        matrix[i][j - 1] + 1,      // 挿入
+                        matrix[i - 1][j - 1] + cost // 置換
+                    );
+                }
+            }
+            return matrix[an][bn];
+        }
+
+        /**
+         * 提案された単語を検索する関数
+         * @param {string} typoWord - タイプミスされた可能性のある単語
+         * @returns {string|null} - 最も似ていると判断された単語、見つからない場合はnull
+         */
+        function suggestSimilarWord(typoWord) {
+            let minDistance = Infinity;
+            let suggestedWord = null;
+            const maxDistanceThreshold = 3; // 提案する最大編集距離のしきい値
+
+            for (const knownWord in wordList) {
+                const distance = levenshteinDistance(typoWord, knownWord);
+
+                if (distance < minDistance) {
+                    minDistance = distance;
+                    suggestedWord = knownWord;
+                }
+            }
+
+            // ある程度の距離を超えていたら提案しない
+            if (minDistance > maxDistanceThreshold) {
+                return null;
+            }
+
+            return suggestedWord;
+        }
+
         function searchWord() {
             const word = searchInput.value.trim().toLowerCase();
             if (word === "") {
@@ -550,12 +612,19 @@
                 resultElement.textContent = `「${word}」の番号は ${number} です。`;
                 resultElement.className = 'result-found';
             } else {
-                resultElement.textContent = `「${word}」は見つかりませんでした。`;
-                resultElement.className = 'result-not-found';
+                // 単語が見つからなかった場合、類似単語を提案
+                const suggestedWord = suggestSimilarWord(word);
+                if (suggestedWord) {
+                    resultElement.innerHTML = `「${word}」は見つかりませんでした。<br>もしかして「**${suggestedWord}**」ではありませんか？`;
+                    resultElement.className = 'result-not-found';
+                } else {
+                    resultElement.textContent = `「${word}」は見つかりませんでした。`;
+                    resultElement.className = 'result-not-found';
+                }
             }
         }
 
-        // Enterキーでも検索できるようにする
+        // Enterキーでも検索できるようにする (変更なし)
         searchInput.addEventListener('keypress', function(event) {
             if (event.key === 'Enter') {
                 searchWord();
