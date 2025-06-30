@@ -615,8 +615,7 @@
                 // 単語が見つからなかった場合、類似単語を提案
                 const suggestedWord = suggestSimilarWord(word);
                 if (suggestedWord) {
-                    resultElement.innerHTML = `「${word}」は見つかりませんでした。<br>もしかして「${suggestedWord}」ではありませんか？`;
-                    resultElement.textContent = `「${suggestedWord}」の番号は ${wordList[suggestedWord]} です。`;
+                    resultElement.innerHTML = `「${word}」は見つかりませんでした。<br>もしかして「${suggestedWord}」ではありませんか？<br>「${suggestedWord}」の番号は ${wordList[suggestedWord]} です。`;
                     resultElement.className = 'result-not-found';
                 } else {
                     resultElement.textContent = `「${word}」は見つかりませんでした。`;
